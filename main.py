@@ -10,7 +10,6 @@ plan_message_id = 0
 #lists
 subjects = []
 s_emojis = []
-ms = []
 
 
 @client.event
@@ -25,10 +24,8 @@ async def on_message(message):
     return
 
   if message.content.startswith('!plan'):
-    ms.append(message)
     # waits for user to input a plan of assignments and sends it to the channel after !end is typed
     await message.channel.send('What is the plan?')
-    ms.append('What is the plan?')
     plan = await client.wait_for('message')
     # one line of plan looks like this: |Subject|Assignment|Starting Date|Ending Date|Points|
     # plan is a list of lines
@@ -51,37 +48,42 @@ async def on_message(message):
       else:
         plant[i].insert(0, s_emojis[subjects.index(plant[i][1])])
         plant[i].insert(0, "- ")
-    #wait for user to type !end
-    end = await client.wait_for('message')
-    if end.content == '!end':
-      #sort the plan by ending date
-      def parse_date(date_str):
-        return datetime.strptime(date_str, "%d.%m.%Y").date()
+   
+    #sort the plan by ending date
+    def parse_date(date_str):
+      return datetime.strptime(date_str, "%d.%m.%Y").date()
 
-      def get_ending_date(line):
-        return parse_date(line[6])
+    def get_ending_date(line):
+      return parse_date(line[6])
 
-      plant = sorted(plant, key=get_ending_date)
+    plant = sorted(plant, key=get_ending_date)
 
-      #generate a string for every line of plan
-      for i in range(len(plant)):
-        plant[i] = ' '.join(plant[i])
-        print(plant[i])
+    #generate a string for every line of plan
+    for i in range(len(plant)):
+      plant[i] = ' '.join(plant[i])
+      print(plant[i])
 
-      #send all the lines of plan in one message
-      planM = '\n\n'.join(i for i in plant)
-      await message.channel.send(planM)
-      #save the message id of the plan message to be able to edit it later (global variable)
-      global plan_message_id
-      plan_message_id = plan.id
-      print(plan_message_id)
-    else:
-      await message.channel.send('Plan canceled')
-      #delete the plan message
-      await message.channel.delete_messages([message])
+    #send all the lines of plan in one message
+    planM = '\n\n'.join(i for i in plant)
+    #get mesage id of the plan message
+    await message.channel.send(planM)
+    #save the message id of the plan message to be able to edit it later (global variable)
+    global plan_message_id
+    plan_message_id = message.channel.last_message_id
+    print(plan_message_id)
 
   if message.content.startswith('!ID'):
     await message.channel.send(plan_message_id)
+
+  if message.content.startswith('!add'):
+    await message.channel.send('What do u wanna add?')
+    add = await client.wait_for('message')
+    print(add.content)
+    #edit the plan message with the new line in the right place
+    msg = await message.channel.fetch_message(plan_message_id)
+    await msg.edit(content=add.content)
+    await message.channel.send('Added')
+
 
 
 client.run('TOKEN')
