@@ -7,9 +7,10 @@ intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
 plan_message_id = 0
-#list of all the subjects and their emojis
+#lists
 subjects = []
 s_emojis = []
+ms = []
 
 
 @client.event
@@ -24,8 +25,10 @@ async def on_message(message):
     return
 
   if message.content.startswith('!plan'):
+    ms.append(message)
     # waits for user to input a plan of assignments and sends it to the channel after !end is typed
     await message.channel.send('What is the plan?')
+    ms.append('What is the plan?')
     plan = await client.wait_for('message')
     # one line of plan looks like this: |Subject|Assignment|Starting Date|Ending Date|Points|
     # plan is a list of lines
@@ -38,13 +41,15 @@ async def on_message(message):
       #remove the leading and ending spaces from the plan
       plant[i] = [j.strip() for j in plant[i]]
       #add the emoji to the subject every subject gets a different emoji and lines with same subject get same emoji
-      if plant[i][0] not in subjects:
-        subjects.append(plant[i][0])
-        s_emojis.append(random.choice(emojis))
-        plant[i].insert(0, s_emojis[subjects.index(plant[i][0])])
+      if plant[i][1] not in subjects:
+        subjects.append(plant[i][1])
+        emoj = random.choice(emojis)
+        s_emojis.append(emoj)
+        emojis.remove(emoj)
+        plant[i].insert(0, s_emojis[subjects.index(plant[i][1])])
         plant[i].insert(0, "- ")
       else:
-        plant[i].insert(0, s_emojis[subjects.index(plant[i][0])])
+        plant[i].insert(0, s_emojis[subjects.index(plant[i][1])])
         plant[i].insert(0, "- ")
     #wait for user to type !end
     end = await client.wait_for('message')
@@ -79,4 +84,4 @@ async def on_message(message):
     await message.channel.send(plan_message_id)
 
 
-client.run('Token')
+client.run('TOKEN')
