@@ -47,8 +47,13 @@ async def on_message(message):
         #wait for user to type !end
         end = await client.wait_for('message')
         if end.content == '!end':
+            #generate a string for every line of plan
+            for i in range(len(plant)):
+                plant[i] = ' '.join(plant[i])
+                print(plant[i])
+              
             #send all the lines of plan in one message
-            planM = '\n\n'.join([' '.join(i) for i in plant])
+            planM = '\n\n'.join(i for i in plant)
             await message.channel.send(planM)
             #save the message id of the plan message to be able to edit it later (global variable)
             global plan_message_id
@@ -61,6 +66,7 @@ async def on_message(message):
     
     if message.content.startswith('!ID'):
         await message.channel.send(plan_message_id)
+    
 
 
 
